@@ -407,7 +407,7 @@ public:
 
 	virtual void MakeCorrectionData();
 	virtual void EndAllMovementAbilities();
-	virtual void AfterCorrectionReceived();
+	virtual void AfterCorrectionReceived(const int rewindtimestamp);
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

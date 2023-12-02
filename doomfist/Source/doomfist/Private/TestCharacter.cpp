@@ -275,7 +275,7 @@ void ATestCharacter::ServerTick(float DeltaTime)
 			{
 				SendExternalMovement = false;
 
-				ServerAuthoritativeMove(TimeStamp, GetActorLocation(), LastVelocity, PreviousLocation, bNoFriction);
+				ServerAuthoritativeMove(TimeStamp - 1, GetActorLocation(), LastVelocity, PreviousLocation, bNoFriction);
 			}
 		}
 
@@ -521,6 +521,8 @@ void ATestCharacter::Launch(const FVector launchvelocity, const float pingInMill
 
 void ATestCharacter::ServerAuthoritativeMove_Implementation(int timestamp1, const FVector position, const FVector lastvelocity, const FVector previouslocation, const bool nofriction)
 {
+	AfterCorrectionReceived(timestamp1);
+
 	FServerAuthoritativeData Data;
 	Data.TimeStamp = timestamp1;
 	Data.LaunchVelocity = lastvelocity;
@@ -532,7 +534,7 @@ void ATestCharacter::ServerAuthoritativeMove_Implementation(int timestamp1, cons
 	bNoFriction = nofriction;
 
 	bExternalMovementSource = true;
-	ExternalMovementSourceStartTime = TimeStamp;
+	ExternalMovementSourceStartTime = timestamp1;
 }
 
 #pragma endregion
@@ -916,9 +918,8 @@ void ATestCharacter::SendClientData_Implementation(const FClientData clientdata)
 
 void ATestCharacter::SendClientCorrection_Implementation(int timestamp1, const FVector position, const FRotator rotation, const FVector previouslocation, const FVector lastvelocity, const float movespeed)
 {
-	AfterCorrectionReceived();
+	AfterCorrectionReceived(timestamp1);
 
-	SimulateTimeStamp = timestamp1;
 	SetActorLocation(position);
 	Rotation = rotation;
 	PreviousLocation = previouslocation;
@@ -929,12 +930,6 @@ void ATestCharacter::SendClientCorrection_Implementation(int timestamp1, const F
 void ATestCharacter::ReceivedCorrection_Implementation(int timeCorrectionReceived)
 {
 	ClientReceivedCorrectionTime = timeCorrectionReceived;
-}
-
-void ATestCharacter::AfterCorrectionReceived()
-{
-	ReplayMoves = true;
-	EndAllMovementAbilities();
 }
 
 void ATestCharacter::CheckClientTimeError(int clienttime)
@@ -983,6 +978,13 @@ void ATestCharacter::CheckClientTimeError(int clienttime)
 void ATestCharacter::MakeCorrectionData()
 {
 	SendClientCorrection(TimeStamp, GetActorLocation(), Rotation, PreviousLocation, LastVelocity, MoveSpeed);
+}
+
+void ATestCharacter::AfterCorrectionReceived(int replaytimestamp)
+{
+	ReplayMoves = true;
+	SimulateTimeStamp = replaytimestamp;
+	EndAllMovementAbilities();
 }
 
 void ATestCharacter::EndAllMovementAbilities()

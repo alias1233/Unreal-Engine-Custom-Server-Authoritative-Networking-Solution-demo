@@ -219,9 +219,7 @@ void AUltraCharacter::MakeCorrectionData()
 
 void AUltraCharacter::SendUltraClientCorrection_Implementation(const FUltraCorrectionData correctiondata)
 {
-	AfterCorrectionReceived();
-
-	SimulateTimeStamp = correctiondata.TimeStamp;
+	AfterCorrectionReceived(correctiondata.TimeStamp);
 
 	SetActorLocation(correctiondata.Position);
 	Rotation = correctiondata.Rotation;
